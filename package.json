@@ -1,0 +1,31 @@
+{
+  "name": "github-actions-arduino",
+  "version": "1.0.0",
+  "description": "OTA Update via MQTT and HTTP for Arduino",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/potaesm/github-actions-arduino.git"
+  },
+  "keywords": [
+    "github-actions"
+  ],
+  "author": "Suthinan Musitmani",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/potaesm/github-actions-arduino/issues"
+  },
+  "homepage": "https://github.com/potaesm/github-actions-arduino#readme",
+  "dependencies": {
+    "@actions/core": "^1.10.0",
+    "@actions/github": "^5.1.1",
+    "express": "^4.18.2",
+    "fs-extra": "^10.1.0",
+    "localtunnel": "^2.0.2",
+    "mqtt": "^4.3.7",
+    "rxjs": "^7.5.7"
+  }
+}

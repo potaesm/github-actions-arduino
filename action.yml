@@ -1,0 +1,17 @@
+name: 'Arduino Continuous Deployment'
+description: 'OTA Update via MQTT and HTTP for Arduino'
+inputs:
+  deviceId:
+    description: 'To be deployed device id'
+    required: true
+    default: ''
+  binaryBuildPath:
+    description: 'Path to binary build folder'
+    required: false
+    default: '/home/runner/sketch/build/'
+outputs:
+  result:
+    description: 'Deployment result'
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
