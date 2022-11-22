@@ -6,7 +6,7 @@
 
 **Required** To be deployed device id. Default `""`.
 
-### `deviceId`
+### `binaryBuildPath`
 
 Path to binary build folder. Default `"/home/runner/sketch/build/"`.
 
@@ -38,7 +38,7 @@ jobs:
           set-build-path: true
       - name: Deploy
         id: deployment
-        uses: potaesm/github-actions-arduino@v1
+        uses: potaesm/github-actions-arduino@v1.0.1
         with:
           deviceId: 'DEVICE_ID'
       - name: Get Result
