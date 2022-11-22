@@ -4,7 +4,8 @@
   "description": "OTA Update via MQTT and HTTP for Arduino",
   "main": "index.js",
   "scripts": {
-    "test": "node index.js"
+    "test": "node index.js",
+    "build": "ncc build index.js --license licenses.txt"
   },
   "repository": {
     "type": "git",
