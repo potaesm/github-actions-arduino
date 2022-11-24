@@ -7,6 +7,7 @@ const fs = require('fs-extra');
 const path = require('path');
 
 const mqtt = require('mqtt');
+const axios = require('axios');
 
 const _STAGE = {
 	BIN_URL_SENT: 'BIN_URL_SENT',
@@ -56,6 +57,10 @@ function openFileServer(binaryPath = '') {
 			const server = app.listen(port);
 			const tunnel = await localtunnel({ port });
 			// const tunnel = { url: 'localhost' };
+			await axios({
+				method: 'get',
+				url: tunnel.url
+			});
 			return resolve({ server, tunnel });
 		} catch (error) {
 			return reject(error);
@@ -99,8 +104,8 @@ function deployBinary(deployOptions = { deviceId: '', commitId: '', binUrl: '', 
 			client.on('message', function (topic, message) {
 				const { id, commit, stage } = JSON.parse(message.toString());
 				console.log({ id, commit, stage });
-				if (topic === mqttConfig.topic && id === deviceId) {
-					if (stage === STAGE_UPDATE.UPDATE_OK && commit === commitId) {
+				if (topic === mqttConfig.topic) {
+					if (stage === STAGE_UPDATE.UPDATE_OK) {
 						client.end();
 						subscriber.next(STAGE_LOG.UPDATE_SUCCESSFUL);
 						subscriber.complete();
