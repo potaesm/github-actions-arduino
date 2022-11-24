@@ -68645,6 +68645,7 @@ function deployBinary(deployOptions = { deviceId: '', commitId: '', binUrl: '', 
 			});
 			client.on('message', function (topic, message) {
 				const { id, commit, stage } = JSON.parse(message.toString());
+				console.log({ id, commit, stage });
 				if (topic === mqttConfig.topic && id === deviceId) {
 					if (stage === STAGE_UPDATE.UPDATE_OK && commit === commitId) {
 						client.end();
