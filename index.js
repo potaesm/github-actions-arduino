@@ -8,7 +8,7 @@ const path = require('path');
 
 const mqtt = require('mqtt');
 
-const STAGE = {
+const _STAGE = {
 	BIN_URL_SENT: 'BIN_URL_SENT',
 	BIN_URL_RECEIVED: 'BIN_URL_RECEIVED',
 	BIN_DOWNLOADING: 'BIN_DOWNLOADING',
@@ -20,6 +20,21 @@ const STAGE = {
 	RESTARTING: 'RESTARTING',
 	STARTED: 'STARTED',
 	TIMEOUT: 'TIMEOUT'
+};
+
+const STAGE_UPDATE = {
+	BIN_URL_RECEIVED: 'BIN_URL_RECEIVED',
+	UPDATE_FAILED: 'UPDATE_FAILED',
+	NO_UPDATES: 'NO_UPDATES',
+	UPDATE_OK: 'UPDATE_OK'
+};
+
+const STAGE_LOG = {
+	BIN_URL_SENT: 'BIN_URL_SENT',
+	TIMEOUT: 'TIMEOUT',
+	UPDATE_SUCCESSFUL: 'UPDATE_SUCCESSFUL',
+	UPDATE_UNSUCCESSFUL: 'UPDATE_UNSUCCESSFUL',
+	COMPLETE: 'COMPLETE'
 };
 
 const mqttConfig = {
@@ -68,32 +83,28 @@ function deployBinary(deployOptions = { deviceId: '', commitId: '', binUrl: '', 
 			const { deviceId, commitId, binUrl, mqttConfig, timeLimit } = deployOptions;
 			const timeout = setTimeout(() => {
 				clearTimeout(timeout);
-				subscriber.error(STAGE.TIMEOUT);
-			}, timeLimit || 120000);
+				subscriber.error(STAGE_LOG.TIMEOUT);
+			}, timeLimit || 180000);
 			const client = mqtt.connect(mqttConfig.url, mqttConfig.options);
 			client.on('connect', function () {
 				client.subscribe(mqttConfig.topic, function (error) {
 					if (error) {
 						subscriber.error(error);
 					} else {
-						client.publish(mqttConfig.topic, JSON.stringify({ id: deviceId, commit: commitId, url: binUrl.replace('https://', 'http://') }));
-						subscriber.next(STAGE.BIN_URL_SENT);
+						client.publish(mqttConfig.topic, JSON.stringify({ id: deviceId, commit: commitId, url: binUrl.replace('https://', 'http://') }), { qos: 2 });
+						subscriber.next(STAGE_LOG.BIN_URL_SENT);
 					}
 				});
 			});
 			client.on('message', function (topic, message) {
 				const { id, commit, stage } = JSON.parse(message.toString());
-				if (topic === mqttConfig.topic && id === deviceId && Object.values(STAGE).includes(stage)) {
-					if (stage === STAGE.STARTED) {
+				if (topic === mqttConfig.topic && id === deviceId) {
+					if (stage === STAGE_UPDATE.UPDATE_OK && commit === commitId) {
 						client.end();
-						if (commit === commitId) {
-							subscriber.next(STAGE.UPDATED);
-							subscriber.complete();
-						} else {
-							subscriber.error(new Error(STAGE.UPDATE_FAILED));
-						}
+						subscriber.next(STAGE_LOG.UPDATE_SUCCESSFUL);
+						subscriber.complete();
 					} else {
-						subscriber.next(stage);
+						subscriber.error(new Error(stage));
 					}
 				}
 			});
@@ -109,7 +120,7 @@ function startDeployment(deployOptions, monitorStage = (stage = '') => {}) {
 			deployBinary(deployOptions).subscribe({
 				next: monitorStage,
 				error: (error) => resolve(error.message),
-				complete: () => resolve(STAGE.UPDATED)
+				complete: () => resolve(STAGE_LOG.COMPLETE)
 			});
 		} catch (error) {
 			return reject(error);
