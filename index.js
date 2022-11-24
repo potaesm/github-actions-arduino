@@ -25,8 +25,6 @@ const _STAGE = {
 
 const STAGE_UPDATE = {
 	BIN_URL_RECEIVED: 'BIN_URL_RECEIVED',
-	UPDATE_FAILED: 'UPDATE_FAILED',
-	NO_UPDATES: 'NO_UPDATES',
 	UPDATE_OK: 'UPDATE_OK'
 };
 
@@ -105,12 +103,14 @@ function deployBinary(deployOptions = { deviceId: '', commitId: '', binUrl: '', 
 				const { id, commit, stage } = JSON.parse(message.toString());
 				console.log({ id, commit, stage });
 				if (topic === mqttConfig.topic) {
+					if (Object.values(STAGE_UPDATE).includes(stage)) {
+						subscriber.error(new Error(stage));
+					}
+					subscriber.next(stage);
 					if (stage === STAGE_UPDATE.UPDATE_OK) {
 						client.end();
 						subscriber.next(STAGE_LOG.UPDATE_SUCCESSFUL);
 						subscriber.complete();
-					} else {
-						subscriber.error(new Error(stage));
 					}
 				}
 			});
