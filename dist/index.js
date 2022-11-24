@@ -73886,10 +73886,18 @@ function openFileServer(binaryPath = '') {
 			const server = app.listen(port);
 			const tunnel = await localtunnel({ port });
 			// const tunnel = { url: 'localhost' };
-			await axios({
-				method: 'get',
-				url: tunnel.url
-			});
+			let retry = 3;
+			while (!!retry) {
+				try {
+					await axios({
+						method: 'get',
+						url: tunnel.url
+					});
+					retry = 0;
+				} catch (error) {
+					retry--;
+				}
+			}
 			return resolve({ server, tunnel });
 		} catch (error) {
 			return reject(error);
@@ -73934,7 +73942,7 @@ function deployBinary(deployOptions = { deviceId: '', commitId: '', binUrl: '', 
 				const { id, commit, stage } = JSON.parse(message.toString());
 				console.log({ id, commit, stage });
 				if (topic === mqttConfig.topic) {
-					if (Object.values(STAGE_UPDATE).includes(stage)) {
+					if (!Object.values(STAGE_UPDATE).includes(stage)) {
 						subscriber.error(new Error(stage));
 					}
 					subscriber.next(stage);
