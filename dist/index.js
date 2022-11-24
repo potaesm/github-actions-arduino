@@ -68681,12 +68681,13 @@ function monitorStage(stage = '') {
 
 (async function () {
 	try {
-		const commitId = github.context.payload.head_commit?.id || '';
-		const deviceId = core.getInput('deviceId') || '';
-		const binaryBuildPath = core.getInput('binaryBuildPath') || '';
+		const commitId = github.context.payload.head_commit?.id;
+		const deviceId = core.getInput('deviceId');
+		const binaryBuildPath = core.getInput('binaryBuildPath');
 		const buildFiles = await fs.readdir(binaryBuildPath);
-		const binaryFullPath = buildFiles.find((fileName) => fileName.includes('.bin'));
-		const { server, tunnel } = await openFileServer(path.join(binaryBuildPath, binaryFullPath));
+		const binaryFileName = buildFiles.find((fileName) => fileName.includes('.bin'));
+		console.log(path.join(binaryBuildPath, binaryFileName));
+		const { server, tunnel } = await openFileServer(path.join(binaryBuildPath, binaryFileName));
 		const result = await startDeployment({ deviceId, commitId, binUrl: tunnel.url, mqttConfig }, monitorStage);
 		await closeFileServer(server, tunnel);
 		return core.setOutput('result', result);
