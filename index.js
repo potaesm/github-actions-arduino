@@ -9,32 +9,41 @@ const path = require('path');
 const mqtt = require('mqtt');
 const axios = require('axios');
 
-const _STAGE = {
+const STAGE = {
 	BIN_URL_SENT: 'BIN_URL_SENT',
 	BIN_URL_RECEIVED: 'BIN_URL_RECEIVED',
-	BIN_DOWNLOADING: 'BIN_DOWNLOADING',
-	BIN_DOWNLOADED: 'BIN_DOWNLOADED',
-	BIN_DOWNLOAD_FAILED: 'BIN_DOWNLOAD_FAILED',
-	UPDATING: 'UPDATING',
-	UPDATED: 'UPDATED',
 	UPDATE_FAILED: 'UPDATE_FAILED',
-	RESTARTING: 'RESTARTING',
-	STARTED: 'STARTED',
+	NO_UPDATES: 'NO_UPDATES',
+	UPDATE_OK: 'UPDATE_OK',
 	TIMEOUT: 'TIMEOUT'
 };
 
-const STAGE_UPDATE = {
-	BIN_URL_RECEIVED: 'BIN_URL_RECEIVED',
-	UPDATE_OK: 'UPDATE_OK'
-};
+// const _STAGE = {
+// 	BIN_URL_SENT: 'BIN_URL_SENT',
+// 	BIN_URL_RECEIVED: 'BIN_URL_RECEIVED',
+// 	BIN_DOWNLOADING: 'BIN_DOWNLOADING',
+// 	BIN_DOWNLOADED: 'BIN_DOWNLOADED',
+// 	BIN_DOWNLOAD_FAILED: 'BIN_DOWNLOAD_FAILED',
+// 	UPDATING: 'UPDATING',
+// 	UPDATED: 'UPDATED',
+// 	UPDATE_FAILED: 'UPDATE_FAILED',
+// 	RESTARTING: 'RESTARTING',
+// 	STARTED: 'STARTED',
+// 	TIMEOUT: 'TIMEOUT'
+// };
 
-const STAGE_LOG = {
-	BIN_URL_SENT: 'BIN_URL_SENT',
-	TIMEOUT: 'TIMEOUT',
-	UPDATE_SUCCESSFUL: 'UPDATE_SUCCESSFUL',
-	UPDATE_UNSUCCESSFUL: 'UPDATE_UNSUCCESSFUL',
-	COMPLETE: 'COMPLETE'
-};
+// const STAGE_UPDATE = {
+// 	BIN_URL_RECEIVED: 'BIN_URL_RECEIVED',
+// 	UPDATE_OK: 'UPDATE_OK'
+// };
+
+// const STAGE_LOG = {
+// 	BIN_URL_SENT: 'BIN_URL_SENT',
+// 	TIMEOUT: 'TIMEOUT',
+// 	UPDATE_SUCCESSFUL: 'UPDATE_SUCCESSFUL',
+// 	UPDATE_UNSUCCESSFUL: 'UPDATE_UNSUCCESSFUL',
+// 	COMPLETE: 'COMPLETE'
+// };
 
 const mqttConfig = {
 	url: 'mqtt://puffin.rmq2.cloudamqp.com',
@@ -88,53 +97,92 @@ function closeFileServer(server = require('express')().listen(), tunnel = requir
 	});
 }
 
-function deployBinary(deployOptions = { deviceId: '', commitId: '', binUrl: '', mqttConfig: {}, timeLimit: 0 }) {
-	return new Observable((subscriber) => {
+// function deployBinary(deployOptions = { deviceId: '', commitId: '', binUrl: '', mqttConfig: {}, timeLimit: 0 }) {
+// 	return new Observable((subscriber) => {
+// 		try {
+// 			const { deviceId, commitId, binUrl, mqttConfig, timeLimit } = deployOptions;
+// 			const timeout = setTimeout(() => {
+// 				clearTimeout(timeout);
+// 				subscriber.error(STAGE_LOG.TIMEOUT);
+// 			}, timeLimit || 180000);
+// 			const client = mqtt.connect(mqttConfig.url, mqttConfig.options);
+// 			client.on('connect', function () {
+// 				client.subscribe(mqttConfig.topic, function (error) {
+// 					if (error) {
+// 						subscriber.error(error);
+// 					} else {
+// 						client.publish(mqttConfig.topic, JSON.stringify({ id: deviceId, commit: commitId, url: binUrl.replace('https://', 'http://') }), { qos: 2 });
+// 						subscriber.next(STAGE_LOG.BIN_URL_SENT);
+// 					}
+// 				});
+// 			});
+// 			client.on('message', function (topic, message) {
+// 				const { id, commit, stage } = JSON.parse(message.toString());
+// 				console.log({ id, commit, stage });
+// 				if (topic === mqttConfig.topic) {
+// 					// if (!Object.values(STAGE_UPDATE).includes(stage)) {
+// 					// 	subscriber.error(new Error(stage));
+// 					// }
+// 					subscriber.next(stage);
+// 					if (stage === STAGE_UPDATE.UPDATE_OK) {
+// 						client.end();
+// 						subscriber.next(STAGE_LOG.UPDATE_SUCCESSFUL);
+// 						subscriber.complete();
+// 					}
+// 				}
+// 			});
+// 		} catch (error) {
+// 			subscriber.error(error);
+// 		}
+// 	});
+// }
+
+// function startDeployment(deployOptions, monitorStage = (stage = '') => {}) {
+// 	return new Promise((resolve, reject) => {
+// 		try {
+// 			deployBinary(deployOptions).subscribe({
+// 				next: monitorStage,
+// 				error: (error) => resolve(error.message),
+// 				complete: () => resolve(STAGE_LOG.COMPLETE)
+// 			});
+// 		} catch (error) {
+// 			return reject(error);
+// 		}
+// 	});
+// }
+
+function startDeployment(deployOptions, monitorStage = (stage = '') => {}) {
+	return new Promise((resolve, reject) => {
 		try {
 			const { deviceId, commitId, binUrl, mqttConfig, timeLimit } = deployOptions;
+			const client = mqtt.connect(mqttConfig.url, mqttConfig.options);
 			const timeout = setTimeout(() => {
 				clearTimeout(timeout);
-				subscriber.error(STAGE_LOG.TIMEOUT);
-			}, timeLimit || 180000);
-			const client = mqtt.connect(mqttConfig.url, mqttConfig.options);
+				client.end();
+				reject(new Error(STAGE.TIMEOUT));
+			}, timeLimit || 120000);
 			client.on('connect', function () {
 				client.subscribe(mqttConfig.topic, function (error) {
 					if (error) {
-						subscriber.error(error);
+						reject(error);
 					} else {
-						client.publish(mqttConfig.topic, JSON.stringify({ id: deviceId, commit: commitId, url: binUrl.replace('https://', 'http://') }), { qos: 2 });
-						subscriber.next(STAGE_LOG.BIN_URL_SENT);
+						client.publish(mqttConfig.topic, JSON.stringify({ id: deviceId, commit: commitId, url: binUrl.replace('https://', 'http://'), stage: STAGE.BIN_URL_SENT }));
 					}
 				});
 			});
 			client.on('message', function (topic, message) {
 				const { id, commit, stage } = JSON.parse(message.toString());
-				console.log({ id, commit, stage });
-				if (topic === mqttConfig.topic) {
-					// if (!Object.values(STAGE_UPDATE).includes(stage)) {
-					// 	subscriber.error(new Error(stage));
-					// }
-					subscriber.next(stage);
-					if (stage === STAGE_UPDATE.UPDATE_OK) {
+				if (topic === mqttConfig.topic && id === deviceId && commit === commitId && Object.values(STAGE).includes(stage)) {
+					monitorStage(stage);
+					if (stage !== STAGE.BIN_URL_SENT && stage !== STAGE.BIN_URL_RECEIVED) {
 						client.end();
-						subscriber.next(STAGE_LOG.UPDATE_SUCCESSFUL);
-						subscriber.complete();
+						if (stage === STAGE.UPDATE_OK) {
+							resolve(stage);
+						} else {
+							reject(new Error(stage));
+						}
 					}
 				}
-			});
-		} catch (error) {
-			subscriber.error(error);
-		}
-	});
-}
-
-function startDeployment(deployOptions, monitorStage = (stage = '') => {}) {
-	return new Promise((resolve, reject) => {
-		try {
-			deployBinary(deployOptions).subscribe({
-				next: monitorStage,
-				error: (error) => resolve(error.message),
-				complete: () => resolve(STAGE_LOG.COMPLETE)
 			});
 		} catch (error) {
 			return reject(error);
@@ -154,14 +202,14 @@ function monitorStage(stage = '') {
 		const buildFiles = await fs.readdir(binaryBuildPath);
 		const binaryFileName = buildFiles.find((fileName) => fileName.includes('.bin'));
 		const { server, tunnel } = await openFileServer(path.join(binaryBuildPath, binaryFileName));
-		// const result = await startDeployment({ deviceId, commitId, binUrl: tunnel.url, mqttConfig }, monitorStage);
-		return deployBinary({ deviceId, commitId, binUrl: tunnel.url, mqttConfig }).subscribe({
-			next: monitorStage,
-			error: (error) => core.setFailed(error),
-			complete: () => core.setOutput('result', STAGE_LOG.COMPLETE)
-		});
-		// await closeFileServer(server, tunnel);
-		// return core.setOutput('result', result);
+		const result = await startDeployment({ deviceId, commitId, binUrl: tunnel.url, mqttConfig }, monitorStage);
+		// return deployBinary({ deviceId, commitId, binUrl: tunnel.url, mqttConfig }).subscribe({
+		// 	next: monitorStage,
+		// 	error: (error) => core.setFailed(error),
+		// 	complete: () => core.setOutput('result', STAGE_LOG.COMPLETE)
+		// });
+		await closeFileServer(server, tunnel);
+		return core.setOutput('result', result);
 	} catch (error) {
 		return core.setFailed(error);
 	}
