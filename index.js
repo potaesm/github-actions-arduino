@@ -118,7 +118,9 @@ function monitorStage(stage = '') {
 		const deviceId = core.getInput('deviceId');
 		const binaryBuildPath = core.getInput('binaryBuildPath');
 		const buildFiles = await fs.readdir(binaryBuildPath);
+		console.log('Build files list: ', buildFiles);
 		const binaryFileName = buildFiles.find((fileName) => fileName.includes('.bin'));
+		console.log('Binary file name: ', binaryFileName);
 		console.log('Opening file server');
 		const { server, tunnel } = await openFileServer(path.join(binaryBuildPath, binaryFileName));
 		console.log('Binary file being served at ', tunnel.url);
