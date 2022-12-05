@@ -10,6 +10,10 @@
 
 Path to binary build folder. Default `"/home/runner/sketch/build/"`.
 
+### `timeLimit`
+
+Deployment time limit in ms. Default `120000` (2 minutes).
+
 ## Outputs
 
 ### `result`
@@ -38,7 +42,7 @@ jobs:
           set-build-path: true
       - name: Deploy
         id: deployment
-        uses: potaesm/github-actions-arduino@v1.0.1
+        uses: potaesm/github-actions-arduino@v1.1.4
         with:
           deviceId: 'DEVICE_ID'
       - name: Get Result

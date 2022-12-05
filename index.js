@@ -117,6 +117,7 @@ function monitorStage(stage = '') {
 		const commitId = github.context.payload.head_commit?.id;
 		const deviceId = core.getInput('deviceId');
 		const binaryBuildPath = core.getInput('binaryBuildPath');
+		const timeLimit = core.getInput('timeLimit');
 		const buildFiles = await fs.readdir(binaryBuildPath);
 		console.log('Build files list: ', buildFiles);
 		const binaryFileName = buildFiles.find((fileName) => fileName.includes('.bin'));
@@ -125,12 +126,20 @@ function monitorStage(stage = '') {
 		const { server, tunnel } = await openFileServer(path.join(binaryBuildPath, binaryFileName));
 		console.log('Binary file being served at ', tunnel.url);
 		console.log('Starting deployment');
-		const result = await startDeployment({ deviceId, commitId, binUrl: tunnel.url, mqttConfig }, monitorStage);
+		let result = '';
+		try {
+			result = await startDeployment({ deviceId, commitId, binUrl: tunnel.url, mqttConfig, timeLimit }, monitorStage);
+		} catch (error) {
+			result = error?.message || `${error}`;
+		}
 		console.log('Deployment result: ', result);
 		console.log('Closing file server');
 		await closeFileServer(server, tunnel);
 		console.log('File server closed');
-		return core.setOutput('result', result);
+		if (result === STAGE.UPDATE_OK) {
+			return core.setOutput('result', result);
+		}
+		return core.setFailed(new Error(result));
 	} catch (error) {
 		return core.setFailed(error);
 	}

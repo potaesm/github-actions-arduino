@@ -9,6 +9,10 @@ inputs:
     description: 'Path to binary build folder'
     required: false
     default: '/home/runner/sketch/build/'
+  timeLimit:
+    description: 'Deployment time limit in ms'
+    required: false
+    default: 120000
 outputs:
   result:
     description: 'Deployment result'
