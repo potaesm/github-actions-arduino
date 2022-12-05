@@ -64949,7 +64949,8 @@ function startDeployment(deployOptions, monitorStage = (stage = '') => {}) {
 			});
 			client.on('message', function (topic, message) {
 				const { id, commit, stage } = JSON.parse(message.toString());
-				if (topic === mqttConfig.topic && id === deviceId && commit === commitId && Object.values(STAGE).includes(stage)) {
+				const isValidStage = Object.values(STAGE).includes(stage) || `${stage}`.startsWith(STAGE.UPDATE_FAILED);
+				if (topic === mqttConfig.topic && id === deviceId && commit === commitId && isValidStage) {
 					monitorStage(stage);
 					if (stage !== STAGE.BIN_URL_SENT && stage !== STAGE.BIN_URL_RECEIVED) {
 						client.end();
