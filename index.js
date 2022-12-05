@@ -37,12 +37,12 @@ function openFileServer(binaryPath = '') {
 			const server = app.listen(port);
 			const tunnel = await localtunnel({ port });
 			// const tunnel = { url: 'localhost' };
-			let retry = 3;
+			let retry = 10;
 			while (!!retry) {
 				try {
 					await axios({
 						method: 'get',
-						url: tunnel.url
+						url: tunnel.url.replace('https://', 'http://')
 					});
 					retry = 0;
 				} catch (error) {
