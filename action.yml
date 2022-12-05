@@ -5,6 +5,22 @@ inputs:
     description: 'To be deployed device id'
     required: true
     default: ''
+  mqttUrl:
+    description: 'MQTT URL'
+    required: true
+    default: ''
+  mqttUsername:
+    description: 'MQTT username'
+    required: true
+    default: ''
+  mqttPassword:
+    description: 'MQTT password'
+    required: true
+    default: ''
+  mqttTopic:
+    description: 'MQTT update topic'
+    required: false
+    default: 'main/update'
   binaryBuildPath:
     description: 'Path to binary build folder'
     required: false

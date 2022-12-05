@@ -6,6 +6,22 @@
 
 **Required** To be deployed device id. Default `""`.
 
+### `mqttUrl`
+
+**Required** MQTT URL. Default `""`.
+
+### `mqttUsername`
+
+**Required** MQTT username. Default `""`.
+
+### `mqttPassword`
+
+**Required** MQTT password. Default `""`.
+
+### `mqttTopic`
+
+MQTT update topic. Default `"main/update"`.
+
 ### `binaryBuildPath`
 
 Path to binary build folder. Default `"/home/runner/sketch/build/"`.
@@ -36,7 +52,8 @@ jobs:
         uses: ArminJo/arduino-test-compile@v3
         with:
           sketch-names: sketch.ino
-          sketch-names-find-start: Sketches/
+          sketch-names-find-start: src/
+          required-libraries: ArduinoMqttClient
           arduino-board-fqbn: esp8266:esp8266:nodemcuv2
           platform-default-url: http://arduino.esp8266.com/stable/package_esp8266com_index.json
           set-build-path: true
@@ -44,7 +61,12 @@ jobs:
         id: deployment
         uses: potaesm/github-actions-arduino@v1.1.4
         with:
-          deviceId: 'DEVICE_ID'
+          deviceId: DEVICE_ID
+          mqttUrl: mqtt://puffin.rmq2.cloudamqp.com
+          mqttUsername: gwbvwhzr:gwbvwhzr
+          mqttPassword: BH4UyDm74GHbzdsYJOFtvZL7LTIM_bNB
+          mqttTopic: main/update
+          timeLimit: 300000
       - name: Get Result
         run: echo "The deployment was ${{ steps.deployment.outputs.result }}"
 ```

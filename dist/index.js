@@ -64858,13 +64858,23 @@ var __webpack_exports__ = {};
 (() => {
 const core = __nccwpck_require__(1590);
 const github = __nccwpck_require__(5824);
-const express = __nccwpck_require__(9544);
-const localtunnel = __nccwpck_require__(4051);
+
 const fs = __nccwpck_require__(4686);
 const path = __nccwpck_require__(1017);
 
+const express = __nccwpck_require__(9544);
+const localtunnel = __nccwpck_require__(4051);
 const mqtt = __nccwpck_require__(9585);
 const axios = __nccwpck_require__(5363);
+
+// const mqttConfig = {
+// 	url: 'mqtt://puffin.rmq2.cloudamqp.com',
+// 	options: {
+// 		username: 'gwbvwhzr:gwbvwhzr',
+// 		password: 'BH4UyDm74GHbzdsYJOFtvZL7LTIM_bNB'
+// 	},
+// 	topic: 'main/update'
+// };
 
 const STAGE = {
 	BIN_URL_SENT: 'BIN_URL_SENT',
@@ -64873,15 +64883,6 @@ const STAGE = {
 	NO_UPDATES: 'NO_UPDATES',
 	UPDATE_OK: 'UPDATE_OK',
 	TIMEOUT: 'TIMEOUT'
-};
-
-const mqttConfig = {
-	url: 'mqtt://puffin.rmq2.cloudamqp.com',
-	options: {
-		username: 'gwbvwhzr:gwbvwhzr',
-		password: 'BH4UyDm74GHbzdsYJOFtvZL7LTIM_bNB'
-	},
-	topic: 'main/update'
 };
 
 function openFileServer(binaryPath = '') {
@@ -64976,6 +64977,18 @@ function monitorStage(stage = '') {
 		const deviceId = core.getInput('deviceId');
 		const binaryBuildPath = core.getInput('binaryBuildPath');
 		const timeLimit = core.getInput('timeLimit');
+		const mqttUrl = core.getInput('mqttUrl');
+		const mqttUsername = core.getInput('mqttUsername');
+		const mqttPassword = core.getInput('mqttPassword');
+		const mqttTopic = core.getInput('mqttTopic');
+		const mqttConfig = {
+			url: mqttUrl,
+			options: {
+				username: mqttUsername,
+				password: mqttPassword
+			},
+			topic: mqttTopic
+		};
 		const buildFiles = await fs.readdir(binaryBuildPath);
 		console.log('Build files list: ', buildFiles);
 		const binaryFileName = buildFiles.find((fileName) => fileName.includes('.bin'));
