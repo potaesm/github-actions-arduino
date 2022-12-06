@@ -64880,7 +64880,6 @@ const STAGE = {
 	BIN_URL_SENT: 'BIN_URL_SENT',
 	BIN_URL_RECEIVED: 'BIN_URL_RECEIVED',
 	UPDATE_FAILED: 'UPDATE_FAILED',
-	NO_UPDATES: 'NO_UPDATES',
 	UPDATE_OK: 'UPDATE_OK',
 	TIMEOUT: 'TIMEOUT'
 };
@@ -64950,15 +64949,14 @@ function startDeployment(deployOptions, monitorStage = (stage = '') => {}) {
 			});
 			client.on('message', function (topic, message) {
 				const { id, commit, stage } = JSON.parse(message.toString() || '{}');
-				const isValidStage = Object.values(STAGE).includes(stage) || `${stage}`.startsWith(STAGE.UPDATE_FAILED);
-				if (topic === mqttConfig.topic && id === deviceId && commit === commitId && isValidStage) {
+				if (topic === mqttConfig.topic && id === deviceId && commit === commitId) {
 					monitorStage(stage);
 					if (stage !== STAGE.BIN_URL_SENT && stage !== STAGE.BIN_URL_RECEIVED) {
 						client.publish(mqttConfig.topic, null, { retain: true, qos: 2 });
 						client.end();
 						if (stage === STAGE.UPDATE_OK) {
 							resolve(stage);
-						} else {
+						} else if (`${stage}`.startsWith(STAGE.UPDATE_FAILED)) {
 							reject(new Error(stage));
 						}
 					}
