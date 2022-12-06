@@ -95,6 +95,7 @@ function startDeployment(deployOptions, monitorStage = (stage = '') => {}) {
 				if (topic === mqttConfig.topic && id === deviceId && commit === commitId && isValidStage) {
 					monitorStage(stage);
 					if (stage !== STAGE.BIN_URL_SENT && stage !== STAGE.BIN_URL_RECEIVED) {
+						client.publish(mqttConfig.topic, Buffer.alloc(10), { retain: true, qos: 2 });
 						client.end();
 						if (stage === STAGE.UPDATE_OK) {
 							resolve(stage);
