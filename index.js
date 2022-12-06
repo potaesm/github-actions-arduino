@@ -85,7 +85,7 @@ function startDeployment(deployOptions, monitorStage = (stage = '') => {}) {
 					if (error) {
 						reject(error);
 					} else {
-						client.publish(mqttConfig.topic, JSON.stringify({ id: deviceId, commit: commitId, url: binUrl.replace('https://', 'http://'), stage: STAGE.BIN_URL_SENT }));
+						client.publish(mqttConfig.topic, JSON.stringify({ id: deviceId, commit: commitId, url: binUrl.replace('https://', 'http://'), stage: STAGE.BIN_URL_SENT }), { retain: true, qos: 2 });
 					}
 				});
 			});
