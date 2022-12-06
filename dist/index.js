@@ -64935,7 +64935,7 @@ function startDeployment(deployOptions, monitorStage = (stage = '') => {}) {
 			const client = mqtt.connect(mqttConfig.url, mqttConfig.options);
 			const timeout = setTimeout(() => {
 				clearTimeout(timeout);
-				client.publish(mqttConfig.topic, null, { retain: true, qos: 2 });
+				client.publish(mqttConfig.topic, '', { retain: true, qos: 2 });
 				client.end();
 				reject(new Error(STAGE.TIMEOUT));
 			}, timeLimit || 120000);
@@ -64954,7 +64954,7 @@ function startDeployment(deployOptions, monitorStage = (stage = '') => {}) {
 				if (topic === mqttConfig.topic && id === deviceId && commit === commitId && isValidStage) {
 					monitorStage(stage);
 					if (stage !== STAGE.BIN_URL_SENT && stage !== STAGE.BIN_URL_RECEIVED) {
-						client.publish(mqttConfig.topic, null, { retain: true, qos: 2 });
+						client.publish(mqttConfig.topic, '', { retain: true, qos: 2 });
 						client.end();
 						if (stage === STAGE.UPDATE_OK) {
 							resolve(stage);
