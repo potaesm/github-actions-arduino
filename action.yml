@@ -5,6 +5,10 @@ inputs:
     description: 'To be deployed device id'
     required: true
     default: ''
+  binaryBuildPath:
+    description: 'Path to binary build folder'
+    required: true
+    default: ''
   mqttUrl:
     description: 'MQTT URL'
     required: true
@@ -21,10 +25,6 @@ inputs:
     description: 'MQTT update topic'
     required: false
     default: 'main/update'
-  binaryBuildPath:
-    description: 'Path to binary build folder'
-    required: false
-    default: '/home/runner/Sketch/build/'
   timeLimit:
     description: 'Deployment time limit in ms'
     required: false

@@ -64949,7 +64949,7 @@ function startDeployment(deployOptions, monitorStage = (stage = '') => {}) {
 				});
 			});
 			client.on('message', function (topic, message) {
-				const { id, commit, stage } = JSON.parse(message.toString() || "{}");
+				const { id, commit, stage } = JSON.parse(message.toString() || '{}');
 				const isValidStage = Object.values(STAGE).includes(stage) || `${stage}`.startsWith(STAGE.UPDATE_FAILED);
 				if (topic === mqttConfig.topic && id === deviceId && commit === commitId && isValidStage) {
 					monitorStage(stage);
@@ -64993,13 +64993,13 @@ function monitorStage(stage = '') {
 			topic: mqttTopic
 		};
 		const buildFiles = await fs.readdir(binaryBuildPath);
-		console.log('Build files list: ', buildFiles);
+		console.log('Build files: ', buildFiles);
 		const binaryFileName = buildFiles.find((fileName) => fileName.includes('.bin'));
 		console.log('Binary file name: ', binaryFileName);
-		console.log('Opening file server');
+		console.log('Opening file server...');
 		const { server, tunnel } = await openFileServer(path.join(binaryBuildPath, binaryFileName));
-		console.log('Binary file being served at ', tunnel.url);
-		console.log('Starting deployment');
+		console.log('Binary file is served at ', tunnel.url);
+		console.log('Starting deployment...');
 		let result = '';
 		try {
 			result = await startDeployment({ deviceId, commitId, binUrl: tunnel.url, mqttConfig, timeLimit }, monitorStage);
@@ -65007,7 +65007,7 @@ function monitorStage(stage = '') {
 			result = error?.message || `${error}`;
 		}
 		console.log('Deployment result: ', result);
-		console.log('Closing file server');
+		console.log('Closing file server...');
 		await closeFileServer(server, tunnel);
 		console.log('File server closed');
 		if (result === STAGE.UPDATE_OK) {
