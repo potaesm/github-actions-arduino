@@ -24,7 +24,7 @@ inputs:
   binaryBuildPath:
     description: 'Path to binary build folder'
     required: false
-    default: '/home/runner/sketch/build/'
+    default: '/home/runner/Sketch/build/'
   timeLimit:
     description: 'Deployment time limit in ms'
     required: false

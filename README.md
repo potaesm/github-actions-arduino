@@ -24,7 +24,7 @@ MQTT update topic. Default `"main/update"`.
 
 ### `binaryBuildPath`
 
-Path to binary build folder. Default `"/home/runner/sketch/build/"`.
+Path to binary build folder. Default `"/home/runner/Sketch/build/"`.
 
 ### `timeLimit`
 
