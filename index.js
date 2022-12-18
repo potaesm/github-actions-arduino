@@ -3,6 +3,7 @@ const github = require('@actions/github');
 
 const fs = require('fs-extra');
 const path = require('path');
+const os = require('os');
 
 const express = require('express');
 const localtunnel = require('localtunnel');

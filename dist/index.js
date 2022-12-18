@@ -9,6 +9,7 @@ const github = __nccwpck_require__(5824);
 
 const fs = __nccwpck_require__(4686);
 const path = __nccwpck_require__(1017);
+const os = __nccwpck_require__(2037);
 
 const express = __nccwpck_require__(9544);
 const localtunnel = __nccwpck_require__(4051);
