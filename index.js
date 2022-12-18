@@ -3,7 +3,6 @@ const github = require('@actions/github');
 
 const fs = require('fs-extra');
 const path = require('path');
-const os = require('os');
 
 const express = require('express');
 const localtunnel = require('localtunnel');
@@ -172,7 +171,7 @@ function monitorStage(stage = '') {
 		const log = [endDate.toLocaleString('en-GB').split(', ').join(' ')];
 		const { minutes, seconds } = timeDiff(startDate, endDate);
 		log.push(`Total: ${minutes}m ${seconds}s`);
-		log.push('Result: ' + result + os.EOL);
+		log.push('Result: ' + result);
 		console.log('Summary:', log.join(', '));
 		if (result === STAGE.UPDATE_OK) {
 			return core.setOutput('result', result);
