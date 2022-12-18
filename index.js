@@ -112,6 +112,7 @@ function startDeployment(deployOptions, monitorStage = (stage = '') => {}) {
 					if (stage !== STAGE.BIN_URL_SENT && stage !== STAGE.BIN_URL_RECEIVED) {
 						client.publish(mqttConfig.topic, null, { retain: true, qos: 2 });
 						client.end();
+						clearTimeout(timeout);
 						if (stage === STAGE.UPDATE_OK) {
 							resolve(stage);
 						} else if (`${stage}`.startsWith(STAGE.UPDATE_FAILED)) {
