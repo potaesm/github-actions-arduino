@@ -9,7 +9,6 @@ const github = __nccwpck_require__(5824);
 
 const fs = __nccwpck_require__(4686);
 const path = __nccwpck_require__(1017);
-const os = __nccwpck_require__(2037);
 
 const express = __nccwpck_require__(9544);
 const localtunnel = __nccwpck_require__(4051);
@@ -178,7 +177,7 @@ function monitorStage(stage = '') {
 		const log = [endDate.toLocaleString('en-GB').split(', ').join(' ')];
 		const { minutes, seconds } = timeDiff(startDate, endDate);
 		log.push(`Total: ${minutes}m ${seconds}s`);
-		log.push('Result: ' + result + os.EOL);
+		log.push('Result: ' + result);
 		console.log('Summary:', log.join(', '));
 		if (result === STAGE.UPDATE_OK) {
 			return core.setOutput('result', result);
