@@ -26,6 +26,22 @@ const STAGE = {
 	TIMEOUT: 'TIMEOUT'
 };
 
+function timeDiff(date1, date2) {
+	const second = 1000,
+		minute = second * 60,
+		hour = minute * 60,
+		day = hour * 24;
+	let ms = Math.abs(date1 - date2);
+	const days = parseInt(String(ms / day), 10);
+	ms -= days * day;
+	const hours = parseInt(String(ms / hour), 10);
+	ms -= hours * hour;
+	const minutes = parseInt(String(ms / minute), 10);
+	ms -= minutes * minute;
+	const seconds = parseInt(String(ms / second), 10);
+	return { days, hours, minutes, seconds };
+}
+
 function openFileServer(binaryPath = '') {
 	return new Promise(async (resolve, reject) => {
 		try {
@@ -116,6 +132,7 @@ function monitorStage(stage = '') {
 
 (async function () {
 	try {
+		const startDate = new Date();
 		const commitId = github.context.payload.head_commit?.id;
 		const deviceId = core.getInput('deviceId');
 		const binaryBuildPath = core.getInput('binaryBuildPath');
@@ -133,12 +150,12 @@ function monitorStage(stage = '') {
 			topic: mqttTopic
 		};
 		const buildFiles = await fs.readdir(binaryBuildPath);
-		console.log('Build files: ', buildFiles);
+		// console.log('Build files: ', buildFiles);
 		const binaryFileName = buildFiles.find((fileName) => fileName.includes('.bin'));
-		console.log('Binary file name: ', binaryFileName);
+		console.log('Binary file name:', binaryFileName);
 		console.log('Opening file server...');
 		const { server, tunnel } = await openFileServer(path.join(binaryBuildPath, binaryFileName));
-		console.log('Binary file is served at ', tunnel.url);
+		console.log('Binary file is served at', tunnel.url);
 		console.log('Starting deployment...');
 		let result = '';
 		try {
@@ -146,10 +163,16 @@ function monitorStage(stage = '') {
 		} catch (error) {
 			result = error?.message || `${error}`;
 		}
-		console.log('Deployment result: ', result);
+		// console.log('Deployment result:', result);
 		console.log('Closing file server...');
 		await closeFileServer(server, tunnel);
 		console.log('File server closed');
+		const endDate = new Date();
+		const log = [endDate.toLocaleString('en-GB').split(', ').join(' ')];
+		const { minutes, seconds } = timeDiff(startDate, endDate);
+		log.push(`Total: ${minutes}m ${seconds}s`);
+		log.push('Result: ' + result + os.EOL);
+		console.log('Summary:', log.join(', '));
 		if (result === STAGE.UPDATE_OK) {
 			return core.setOutput('result', result);
 		}
@@ -158,3 +181,12 @@ function monitorStage(stage = '') {
 		return core.setFailed(error);
 	}
 })();
+
+module.exports = {
+	STAGE,
+	openFileServer,
+	closeFileServer,
+	startDeployment,
+	monitorStage,
+	timeDiff
+};
