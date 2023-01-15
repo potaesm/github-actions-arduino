@@ -102,6 +102,7 @@ function startDeployment(deployOptions, monitorStage = (stage = '') => {}) {
 				client.end();
 				reject(new Error(STAGE.TIMEOUT));
 			}, timeLimit || 120000);
+			let deviceCounter = 0;
 			client.on('connect', function () {
 				client.subscribe(mqttConfig.topic, function (error) {
 					if (error) {
@@ -115,14 +116,20 @@ function startDeployment(deployOptions, monitorStage = (stage = '') => {}) {
 				const { id, commit, stage } = JSON.parse(message.toString() || '{}');
 				if (topic === mqttConfig.topic && id === deviceId && commit === commitId) {
 					monitorStage(stage);
+					if (stage === STAGE.BIN_URL_RECEIVED) {
+						deviceCounter++;
+					}
 					if (stage !== STAGE.BIN_URL_SENT && stage !== STAGE.BIN_URL_RECEIVED) {
-						client.publish(mqttConfig.topic, null, { retain: true, qos: 2 });
-						client.end();
-						clearTimeout(timeout);
-						if (stage === STAGE.UPDATE_OK) {
-							resolve(stage);
-						} else if (`${stage}`.startsWith(STAGE.UPDATE_FAILED)) {
-							reject(new Error(stage));
+						deviceCounter--;
+						if (!deviceCounter) {
+							client.publish(mqttConfig.topic, null, { retain: true, qos: 2 });
+							client.end();
+							clearTimeout(timeout);
+							if (stage === STAGE.UPDATE_OK) {
+								resolve(stage);
+							} else if (`${stage}`.startsWith(STAGE.UPDATE_FAILED)) {
+								reject(new Error(stage));
+							}
 						}
 					}
 				}
