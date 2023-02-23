@@ -42,7 +42,7 @@ function timeDiff(date1, date2) {
 	return { days, hours, minutes, seconds };
 }
 
-function openFileServer(binaryPath = '') {
+function openFileServer(binaryPath = '', url = '') {
 	return new Promise(async (resolve, reject) => {
 		try {
 			const port = 3001;
@@ -50,8 +50,12 @@ function openFileServer(binaryPath = '') {
 			app.use(express.json());
 			app.get('/', (request, response) => response.download(binaryPath));
 			const server = app.listen(port);
-			const tunnel = await localtunnel({ port });
-			// const tunnel = { url: 'localhost' };
+			let tunnel = null;
+			if (!!url) {
+				tunnel = { url, close: () => {} };
+			} else {
+				tunnel = await localtunnel({ port });
+			}
 			let retry = 10;
 			while (!!retry) {
 				try {
@@ -149,6 +153,7 @@ function monitorStage(stage = '') {
 		const mqttUsername = core.getInput('mqttUsername');
 		const mqttPassword = core.getInput('mqttPassword');
 		const mqttTopic = core.getInput('mqttTopic');
+		const tunnelUrlFile = core.getInput('tunnelUrlFile');
 		const mqttConfig = {
 			url: mqttUrl,
 			options: {
@@ -162,7 +167,12 @@ function monitorStage(stage = '') {
 		const binaryFileName = buildFiles.find((fileName) => fileName.includes('.bin'));
 		console.log('Binary file name:', binaryFileName);
 		console.log('Opening file server...');
-		const { server, tunnel } = await openFileServer(path.join(binaryBuildPath, binaryFileName));
+		let url = '';
+		url = 'localhost';
+		if (!!tunnelUrlFile && !url) {
+			url = await fs.readFile(tunnelUrlFile, 'utf8');
+		}
+		const { server, tunnel } = await openFileServer(path.join(binaryBuildPath, binaryFileName), url);
 		console.log('Binary file is served at', tunnel.url);
 		console.log('Starting deployment...');
 		let result = '';

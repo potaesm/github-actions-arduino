@@ -26,6 +26,10 @@ MQTT update topic. Default `"main/update"`.
 
 Path to binary build folder. Default `"/home/runner/Sketch/build/"`.
 
+### `tunnelUrlFile`
+
+Path to binary build folder. Default `""`.
+
 ### `timeLimit`
 
 Deployment time limit in ms. Default `120000` (2 minutes).
