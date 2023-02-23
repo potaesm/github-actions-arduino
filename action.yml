@@ -25,10 +25,14 @@ inputs:
     description: 'MQTT update topic'
     required: false
     default: 'main/update'
-  tunnelUrlFile:
-    description: 'File that contains tunnel url'
+  tunnelUrlFilePath:
+    description: 'Path to the file that contains tunnel url'
     required: false
     default: ''
+  fileServerPort:
+    description: 'File server internal port'
+    required: false
+    default: 3001
   timeLimit:
     description: 'Deployment time limit in ms'
     required: false

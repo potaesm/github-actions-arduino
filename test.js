@@ -30,7 +30,8 @@ function generateReport(startDate = new Date(), result = '', fileName = 'test-re
 		const mqttUsername = 'gwbvwhzr:gwbvwhzr';
 		const mqttPassword = 'BH4UyDm74GHbzdsYJOFtvZL7LTIM_bNB';
 		const mqttTopic = 'main/update';
-		const tunnelUrlFile = 'urlFile.txt';
+		const tunnelUrlFilePath = 'tunnelUrl.txt';
+		const fileServerPort = 3001;
 		const mqttConfig = {
 			url: mqttUrl,
 			options: {
@@ -44,12 +45,12 @@ function generateReport(startDate = new Date(), result = '', fileName = 'test-re
 		const binaryFileName = buildFiles.find((fileName) => fileName.includes('.bin'));
 		console.log('Binary file name: ', binaryFileName);
 		console.log('Opening file server...');
-		let url = '';
-		// url = 'localhost';
-		if (!!tunnelUrlFile && !url) {
-			url = await fs.readFile(tunnelUrlFile, 'utf8');
+		let tunnelUrl = '';
+		// tunnelUrl = 'localhost';
+		if (!!tunnelUrlFilePath && !tunnelUrl) {
+			tunnelUrl = await fs.readFile(tunnelUrlFilePath, 'utf8');
 		}
-		const { server, tunnel } = await openFileServer(path.join(binaryBuildPath, binaryFileName), url);
+		const { server, tunnel } = await openFileServer(path.join(binaryBuildPath, binaryFileName), tunnelUrl, fileServerPort);
 		console.log('Binary file is served at ', tunnel.url);
 		console.log('Starting deployment...');
 		let result = '';

@@ -26,9 +26,13 @@ MQTT update topic. Default `"main/update"`.
 
 Path to binary build folder. Default `"/home/runner/Sketch/build/"`.
 
-### `tunnelUrlFile`
+### `tunnelUrlFilePath`
 
-Path to binary build folder. Default `""`.
+Path to the file that contains tunnel url. Default `""`.
+
+### `fileServerPort`
+
+File server internal port. Default `3001`.
 
 ### `timeLimit`
 
@@ -63,7 +67,7 @@ jobs:
           set-build-path: true
       - name: Deploy
         id: deployment
-        uses: potaesm/github-actions-arduino@v1.1.4
+        uses: potaesm/github-actions-arduino@v1.3.3
         with:
           deviceId: DEVICE_ID
           mqttUrl: mqtt://puffin.rmq2.cloudamqp.com

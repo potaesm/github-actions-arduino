@@ -48,19 +48,18 @@ function timeDiff(date1, date2) {
 	return { days, hours, minutes, seconds };
 }
 
-function openFileServer(binaryPath = '', url = '') {
+function openFileServer(binaryPath = '', tunnelUrl = '', fileServerPort = 3001) {
 	return new Promise(async (resolve, reject) => {
 		try {
-			const port = 3001;
 			const app = express();
 			app.use(express.json());
 			app.get('/', (request, response) => response.download(binaryPath));
-			const server = app.listen(port);
+			const server = app.listen(fileServerPort);
 			let tunnel = null;
-			if (!!url) {
-				tunnel = { url, close: () => {} };
+			if (!!tunnelUrl) {
+				tunnel = { url: tunnelUrl, close: () => {} };
 			} else {
-				tunnel = await localtunnel({ port });
+				tunnel = await localtunnel({ port: fileServerPort });
 			}
 			let retry = 10;
 			while (!!retry) {
@@ -159,7 +158,8 @@ function monitorStage(stage = '') {
 		const mqttUsername = core.getInput('mqttUsername');
 		const mqttPassword = core.getInput('mqttPassword');
 		const mqttTopic = core.getInput('mqttTopic');
-		const tunnelUrlFile = core.getInput('tunnelUrlFile');
+		const tunnelUrlFilePath = core.getInput('tunnelUrlFilePath');
+		const fileServerPort = core.getInput('fileServerPort');
 		const mqttConfig = {
 			url: mqttUrl,
 			options: {
@@ -173,12 +173,12 @@ function monitorStage(stage = '') {
 		const binaryFileName = buildFiles.find((fileName) => fileName.includes('.bin'));
 		console.log('Binary file name:', binaryFileName);
 		console.log('Opening file server...');
-		let url = '';
-		url = 'localhost';
-		if (!!tunnelUrlFile && !url) {
-			url = await fs.readFile(tunnelUrlFile, 'utf8');
+		let tunnelUrl = '';
+		// tunnelUrl = 'localhost';
+		if (!!tunnelUrlFilePath && !tunnelUrl) {
+			tunnelUrl = await fs.readFile(tunnelUrlFilePath, 'utf8');
 		}
-		const { server, tunnel } = await openFileServer(path.join(binaryBuildPath, binaryFileName), url);
+		const { server, tunnel } = await openFileServer(path.join(binaryBuildPath, binaryFileName), tunnelUrl, fileServerPort);
 		console.log('Binary file is served at', tunnel.url);
 		console.log('Starting deployment...');
 		let result = '';
